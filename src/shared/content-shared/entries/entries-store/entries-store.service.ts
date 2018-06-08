@@ -72,6 +72,7 @@ export interface EntriesFilters {
 export const EntriesDataProviderToken = new InjectionToken('entries-data-provider');
 export const EntriesManualExecutionModeToken = new InjectionToken<boolean>('entries-data-provider');
 export const EntriesStorePaginationCacheToken = new InjectionToken('entries-store-pagination-cache-token');
+export const EntriesFiltersTarget = new InjectionToken('entries-filters-target');
 
 @Injectable()
 export class EntriesStore extends FiltersStoreBase<EntriesFilters> implements OnDestroy {

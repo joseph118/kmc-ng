@@ -1,5 +1,6 @@
 import { Component } from '@angular/core';
 import {
+    EntriesFiltersTarget,
     EntriesManualExecutionModeToken, EntriesStore,
     EntriesStorePaginationCacheToken
 } from 'app-shared/content-shared/entries/entries-store/entries-store.service';
@@ -13,7 +14,9 @@ import { KalturaLogger, KalturaLoggerName } from '@kaltura-ng/kaltura-logger';
     EntriesStore,
       { provide: EntriesManualExecutionModeToken, useValue: true},
     KalturaLogger.createLogger('ContentEntriesComponent'),
-    { provide: EntriesStorePaginationCacheToken, useValue: 'entries-list' }
+    { provide: EntriesStorePaginationCacheToken, useValue: 'entries-list' },
+    { provide: EntriesFiltersTarget, useValue: 'entries-list' },
+
   ]
 })
 export class ContentEntriesComponent {

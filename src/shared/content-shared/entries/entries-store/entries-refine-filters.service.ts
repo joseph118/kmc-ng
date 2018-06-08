@@ -1,4 +1,4 @@
-import { Injectable } from '@angular/core';
+import { Inject, Injectable, Optional } from '@angular/core';
 import { Observable } from 'rxjs/Observable';
 import 'rxjs/add/operator/publishReplay';
 import 'rxjs/add/observable/throw';
@@ -30,6 +30,8 @@ import { KMCPermissions, KMCPermissionsService } from 'app-shared/kmc-shared/kmc
 import { KalturaAccessControlListResponse } from 'kaltura-ngx-client/api/types/KalturaAccessControlListResponse';
 import { KalturaDistributionProfileListResponse } from 'kaltura-ngx-client/api/types/KalturaDistributionProfileListResponse';
 import { KalturaLogger } from '@kaltura-ng/kaltura-logger/kaltura-logger.service';
+import { serverConfig } from 'config/server';
+import { EntriesFiltersTarget } from 'app-shared/content-shared/entries/entries-store/entries-store.service';
 
 export interface RefineGroupListItem
 { value: string, label: string }
@@ -54,7 +56,8 @@ export class EntriesRefineFiltersService {
 
     private _getRefineFilters$: Observable<RefineGroup[]>;
 
-    constructor(private kalturaServerClient: KalturaClient,
+    constructor(@Inject(EntriesFiltersTarget) @Optional() private _filtersTarget: string,
+                private kalturaServerClient: KalturaClient,
                 private _permissionsService: KMCPermissionsService,
                 private _metadataProfileStore: MetadataProfileStore,
                 private _flavoursStore: FlavoursStore,
@@ -154,19 +157,25 @@ export class EntriesRefineFiltersService {
         const result: RefineGroup = { label: '', lists: [] };
 
         // build constant filters
-        DefaultFiltersList.forEach((defaultFilterList) => {
-            const newRefineFilter = new RefineGroupList(
-                defaultFilterList.name,
-                defaultFilterList.label
-            );
-            result.lists.push(newRefineFilter);
-            defaultFilterList.items.forEach((item: any) => {
-              if (item.value !== '201' || this._permissionsService.hasPermission(KMCPermissions.FEATURE_LIVE_STREAM)) {
-                newRefineFilter.items.push({ value: item.value, label: item.label });
-              }
+        DefaultFiltersList
+            .filter(filter => {
+                const entriesConfig = serverConfig.kalturaServer.entries;
+                return filter.name === 'captions'
+                    ? entriesConfig && entriesConfig.service === 'esearch' && this._filtersTarget === 'entries-list'
+                    : true;
+            })
+            .forEach((defaultFilterList) => {
+                const newRefineFilter = new RefineGroupList(
+                    defaultFilterList.name,
+                    defaultFilterList.label
+                );
+                result.lists.push(newRefineFilter);
+                defaultFilterList.items.forEach((item: any) => {
+                  if (item.value !== '201' || this._permissionsService.hasPermission(KMCPermissions.FEATURE_LIVE_STREAM)) {
+                    newRefineFilter.items.push({ value: item.value, label: item.label });
+                  }
+                });
             });
-
-        });
 
         // build flavors filters
         if (flavours.length > 0) {

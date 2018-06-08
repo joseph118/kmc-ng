@@ -60,6 +60,9 @@ export interface ServerConfig {
         },
         limitAccess?: {
             serviceUrl: string
+        },
+        entries?: {
+            service: string
         }
     };
     cdnServers: {

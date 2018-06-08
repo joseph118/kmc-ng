@@ -10,6 +10,9 @@
     },
       "limitAccess": {
           "serviceUrl": "@kalturaServer.limitAccess.serviceUrl@"
+      },
+      "entries": {
+          "service": "@kalturaServer.entries.service@"
       }
   },
   "cdnServers": {

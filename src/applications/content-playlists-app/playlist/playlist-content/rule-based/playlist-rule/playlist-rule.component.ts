@@ -1,8 +1,8 @@
 import { Component, EventEmitter, Input, OnInit, Output, ViewChild } from '@angular/core';
 import { EntriesListComponent } from 'app-shared/content-shared/entries/entries-list/entries-list.component';
 import {
-  EntriesFilters, EntriesStore, EntriesStorePaginationCacheToken,
-  SortDirection
+    EntriesFilters, EntriesFiltersTarget, EntriesStore, EntriesStorePaginationCacheToken,
+    SortDirection
 } from 'app-shared/content-shared/entries/entries-store/entries-store.service';
 import { EntriesTableColumns } from 'app-shared/content-shared/entries/entries-table/entries-table.component';
 import { KalturaPlayableEntryOrderBy } from 'kaltura-ngx-client/api/types/KalturaPlayableEntryOrderBy';
@@ -21,7 +21,8 @@ import { AreaBlockerMessage } from '@kaltura-ng/kaltura-ui/area-blocker/area-blo
   styleUrls: ['./playlist-rule.component.scss'],
   providers: [
     PlaylistRuleParserService,
-    { provide: EntriesStorePaginationCacheToken, useValue: 'entries-list' }
+    { provide: EntriesStorePaginationCacheToken, useValue: 'entries-list' },
+    { provide: EntriesFiltersTarget, useValue: 'rule-based-playlist' }
   ]
 })
 export class PlaylistRuleComponent implements OnInit {

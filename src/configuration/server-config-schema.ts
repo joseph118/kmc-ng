@@ -34,6 +34,13 @@ export const ServerConfigSchema = {
                     },
                     required: ['serviceUrl'],
                     additionalProperties: true
+                },
+                entries: {
+                    properties: {
+                        service: { type: 'string' }
+                    },
+                    required: ['service'],
+                    additionalProperties: true
                 }
             },
             required: ['uri', 'previewUIConf', 'deployUrl'],

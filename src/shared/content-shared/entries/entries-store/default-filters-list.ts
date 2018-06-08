@@ -1,9 +1,10 @@
 import { KalturaEntryStatus } from 'kaltura-ngx-client/api/types/KalturaEntryStatus';
 
+
 export interface DefaultFilterList {
     label: string;
     name: string;
-    items: { value: string, label: string }[]
+    items: { value: string | boolean, label: string }[];
 }
 
 export const DefaultFiltersList: DefaultFilterList[] = [
@@ -67,6 +68,13 @@ export const DefaultFiltersList: DefaultFilterList[] = [
         items: [
             {value: '3,1', label: 'Processing new files'},
             {value: '2', label: 'Ready for review'}
+        ]
+    },
+    {
+        name: 'captions', label: 'Captions',
+        items: [
+            { value: true, label: 'Has captions' },
+            { value: false, label: 'No captions' }
         ]
     }
 ];
