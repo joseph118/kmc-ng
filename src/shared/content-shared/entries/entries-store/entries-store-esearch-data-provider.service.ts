@@ -57,7 +57,8 @@ export class EntriesStoreDataProvider implements EntriesDataProvider, OnDestroy 
         if (value) {
             searchItems.push(new KalturaESearchEntryItem({
                 searchTerm: value,
-                fieldName
+                fieldName,
+                // itemType: KalturaESearchItemType.partial TODO esearch
             }));
         }
     }
