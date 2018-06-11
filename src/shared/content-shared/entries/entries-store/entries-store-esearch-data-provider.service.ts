@@ -3,17 +3,10 @@ import { EntriesDataProvider, EntriesFilters, MetadataProfileData, SortDirection
 import { KalturaBaseEntry } from 'kaltura-ngx-client/api/types/KalturaBaseEntry';
 import { Observable } from 'rxjs/Observable';
 import { KalturaDetachedResponseProfile } from 'kaltura-ngx-client/api/types/KalturaDetachedResponseProfile';
-import { KalturaMetadataSearchItem } from 'kaltura-ngx-client/api/types/KalturaMetadataSearchItem';
-import { KalturaNullableBoolean } from 'kaltura-ngx-client/api/types/KalturaNullableBoolean';
-import { KalturaSearchOperatorType } from 'kaltura-ngx-client/api/types/KalturaSearchOperatorType';
-import { KalturaSearchOperator } from 'kaltura-ngx-client/api/types/KalturaSearchOperator';
-import { KalturaSearchCondition } from 'kaltura-ngx-client/api/types/KalturaSearchCondition';
-import { KalturaContentDistributionSearchItem } from 'kaltura-ngx-client/api/types/KalturaContentDistributionSearchItem';
 import { KalturaLiveStreamEntry } from 'kaltura-ngx-client/api/types/KalturaLiveStreamEntry';
 import { KalturaExternalMediaEntry } from 'kaltura-ngx-client/api/types/KalturaExternalMediaEntry';
 import { KalturaFilterPager } from 'kaltura-ngx-client/api/types/KalturaFilterPager';
 import { KalturaResponseProfileType } from 'kaltura-ngx-client/api/types/KalturaResponseProfileType';
-import { KalturaMediaEntryFilter } from 'kaltura-ngx-client/api/types/KalturaMediaEntryFilter';
 import { KalturaLiveStreamAdminEntry } from 'kaltura-ngx-client/api/types/KalturaLiveStreamAdminEntry';
 import { KalturaUtils } from '@kaltura-ng/kaltura-common/utils/kaltura-utils';
 import { KalturaClient } from 'kaltura-ngx-client';
@@ -98,7 +91,8 @@ export class EntriesStoreDataProvider implements EntriesDataProvider, OnDestroy 
                         searchParams.searchOperator.searchItems.push(
                             new KalturaESearchEntryItem({
                                 searchTerm: data.freetext,
-                                itemType: KalturaESearchItemType.partial
+                                itemType: KalturaESearchItemType.partial,
+                                fieldName: KalturaESearchEntryFieldName._name // TODO esearch
                             })
                         );
                     }
@@ -192,49 +186,85 @@ export class EntriesStoreDataProvider implements EntriesDataProvider, OnDestroy 
                     // }
 
                     // filter 'timeScheduling'
-                    // if (data.timeScheduling && data.timeScheduling.length > 0) {
-                    //     data.timeScheduling.forEach(item => {
-                    //         switch (item) {
-                    //             case 'past':
-                    //                 if (searchParams.endDateLessThanOrEqual === undefined || searchParams.endDateLessThanOrEqual < (new Date())) {
-                    //                     searchParams.endDateLessThanOrEqual = (new Date());
-                    //                 }
-                    //                 break;
-                    //             case 'live':
-                    //                 if (searchParams.startDateLessThanOrEqualOrNull === undefined || searchParams.startDateLessThanOrEqualOrNull > (new Date())) {
-                    //                     searchParams.startDateLessThanOrEqualOrNull = (new Date());
-                    //                 }
-                    //                 if (searchParams.endDateGreaterThanOrEqualOrNull === undefined || searchParams.endDateGreaterThanOrEqualOrNull < (new Date())) {
-                    //                     searchParams.endDateGreaterThanOrEqualOrNull = (new Date());
-                    //                 }
-                    //                 break;
-                    //             case 'future':
-                    //                 if (searchParams.startDateGreaterThanOrEqual === undefined || searchParams.startDateGreaterThanOrEqual > (new Date())) {
-                    //                     searchParams.startDateGreaterThanOrEqual = (new Date());
-                    //                 }
-                    //                 break;
-                    //             case 'scheduled':
-                    //                 if (data.scheduledAt.fromDate) {
-                    //                     if (searchParams.startDateGreaterThanOrEqual === undefined
-                    //                         || searchParams.startDateGreaterThanOrEqual > (KalturaUtils.getStartDateValue(data.scheduledAt.fromDate))
-                    //                     ) {
-                    //                         searchParams.startDateGreaterThanOrEqual = (KalturaUtils.getStartDateValue(data.scheduledAt.fromDate));
-                    //                     }
-                    //                 }
-                    //
-                    //                 if (data.scheduledAt.toDate) {
-                    //                     if (searchParams.endDateLessThanOrEqual === undefined
-                    //                         || searchParams.endDateLessThanOrEqual < (KalturaUtils.getEndDateValue(data.scheduledAt.toDate))
-                    //                     ) {
-                    //                         searchParams.endDateLessThanOrEqual = (KalturaUtils.getEndDateValue(data.scheduledAt.toDate));
-                    //                     }
-                    //                 }
-                    //                 break;
-                    //             default:
-                    //                 break;
-                    //         }
-                    //     });
-                    // }
+                    if (data.timeScheduling && data.timeScheduling.length > 0) {
+                        data.timeScheduling.forEach(item => {
+                            let relevantSearchItem: KalturaESearchEntryItem;
+                            switch (item) {
+                                case 'past':
+                                    relevantSearchItem = <KalturaESearchEntryItem>searchParams.searchOperator.searchItems
+                                        .find((searchItem: KalturaESearchEntryItem) =>
+                                            searchItem.fieldName === KalturaESearchEntryFieldName.endDate
+                                            && searchItem.range && searchItem.range.lessThanOrEqual < +(new Date())
+                                        );
+                                    if (!relevantSearchItem) {
+                                        searchParams.searchOperator.searchItems.push(new KalturaESearchEntryItem({
+                                            fieldName: KalturaESearchEntryFieldName.endDate,
+                                            range: new KalturaESearchRange({ lessThanOrEqual: +(new Date()) })
+                                        }));
+                                    }
+                                    break;
+                                case 'live':
+                                    relevantSearchItem = <KalturaESearchEntryItem>searchParams.searchOperator.searchItems
+                                        .find((searchItem: KalturaESearchEntryItem) =>
+                                            searchItem.fieldName === KalturaESearchEntryFieldName.startDate
+                                            && searchItem.range && searchItem.range.lessThanOrEqual < +(new Date())
+                                        );
+                                    if (!relevantSearchItem) {
+                                        searchParams.searchOperator.searchItems.push(new KalturaESearchEntryItem({
+                                            fieldName: KalturaESearchEntryFieldName.startDate,
+                                            range: new KalturaESearchRange({ lessThanOrEqual: +(new Date()) })
+                                        }));
+                                    }
+                                    break;
+                                case 'future':
+                                    relevantSearchItem = <KalturaESearchEntryItem>searchParams.searchOperator.searchItems
+                                        .find((searchItem: KalturaESearchEntryItem) =>
+                                            searchItem.fieldName === KalturaESearchEntryFieldName.startDate
+                                            && searchItem.range && searchItem.range.greaterThanOrEqual > +(new Date())
+                                        );
+                                    if (!relevantSearchItem) {
+                                        searchParams.searchOperator.searchItems.push(new KalturaESearchEntryItem({
+                                            fieldName: KalturaESearchEntryFieldName.startDate,
+                                            range: new KalturaESearchRange({ greaterThanOrEqual: +(new Date()) })
+                                        }));
+                                    }
+                                    break;
+                                case 'scheduled':
+                                    if (data.scheduledAt.fromDate) {
+                                        relevantSearchItem = <KalturaESearchEntryItem>searchParams.searchOperator.searchItems
+                                            .find((searchItem: KalturaESearchEntryItem) =>
+                                                searchItem.fieldName === KalturaESearchEntryFieldName.startDate
+                                                && searchItem.range
+                                                && searchItem.range.greaterThanOrEqual > +KalturaUtils.getStartDateValue(data.scheduledAt.fromDate)
+                                            );
+                                        if (!relevantSearchItem) {
+                                            searchParams.searchOperator.searchItems.push(new KalturaESearchEntryItem({
+                                                fieldName: KalturaESearchEntryFieldName.startDate,
+                                                range: new KalturaESearchRange({ greaterThanOrEqual: +KalturaUtils.getStartDateValue(data.scheduledAt.fromDate) })
+                                            }));
+                                        }
+                                    }
+
+                                    if (data.scheduledAt.toDate) {
+                                        relevantSearchItem = <KalturaESearchEntryItem>searchParams.searchOperator.searchItems
+                                            .find((searchItem: KalturaESearchEntryItem) =>
+                                                searchItem.fieldName === KalturaESearchEntryFieldName.endDate
+                                                && searchItem.range
+                                                && searchItem.range.lessThanOrEqual < +KalturaUtils.getEndDateValue(data.scheduledAt.fromDate)
+                                            );
+                                        if (!relevantSearchItem) {
+                                            searchParams.searchOperator.searchItems.push(new KalturaESearchEntryItem({
+                                                fieldName: KalturaESearchEntryFieldName.startDate,
+                                                range: new KalturaESearchRange({ lessThanOrEqual: +KalturaUtils.getEndDateValue(data.scheduledAt.fromDate) })
+                                            }));
+                                        }
+                                    }
+                                    break;
+                                default:
+                                    break;
+                            }
+                        });
+                    }
 
                     // filters of custom metadata lists
                     // if (metadataProfiles && metadataProfiles.length > 0) {
