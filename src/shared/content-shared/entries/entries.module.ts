@@ -43,6 +43,7 @@ import { LinkedEntriesTableComponent } from './link-entries-selector/linked-entr
 import { LinkedEntriesAddEntriesComponent } from './link-entries-selector/linked-entries-add-entries/linked-entries-add-entries.component';
 import {LinkedEntriesComponent} from './link-entries-selector/linked-entries/linked-entries.component';
 import { KMCPermissionsModule } from 'app-shared/kmc-shared/kmc-permissions';
+import { EntriesStoreEsearchDataProvider } from 'app-shared/content-shared/entries/entries-store/entries-store-esearch-data-provider.service';
 
 @NgModule({
   imports: [
@@ -106,17 +107,22 @@ import { KMCPermissionsModule } from 'app-shared/kmc-shared/kmc-permissions';
     EntriesSelectorComponent,
     LiveDashboardComponent,
     LiveDashboardHostComponent,
-	  LinkedEntriesComponent,
-	  LinkedEntriesTableComponent,
-	  LinkedEntriesAddEntriesComponent
+    LinkedEntriesComponent,
+    LinkedEntriesTableComponent,
+    LinkedEntriesAddEntriesComponent
   ]
 })
 export class EntriesModule {
     static forRoot(): ModuleWithProviders {
+        // TODO esearch provide relevant data provider according to the serverConfig
+        // const entriesServerConfig = serverConfig.kalturaServer.entries;
+        // const entriesStoreDataProvider = entriesServerConfig && entriesServerConfig.service === 'esearch'
+        //     ? EntriesStoreEsearchDataProviderService
+        //     : EntriesStoreDataProvider;
         return {
             ngModule: EntriesModule,
             providers: <any[]>[
-                { provide: EntriesDataProviderToken, useClass: EntriesStoreDataProvider }
+                { provide: EntriesDataProviderToken, useClass: EntriesStoreEsearchDataProvider }
             ]
         };
     }

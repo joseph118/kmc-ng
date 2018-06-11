@@ -29,10 +29,11 @@ import { KalturaESearchEntryFieldName } from 'kaltura-ngx-client/api/types/Kaltu
 import { KalturaESearchCategoryEntryItem } from 'kaltura-ngx-client/api/types/KalturaESearchCategoryEntryItem';
 import { KalturaESearchCategoryEntryFieldName } from 'kaltura-ngx-client/api/types/KalturaESearchCategoryEntryFieldName';
 import { KalturaESearchEntryBaseItem } from 'kaltura-ngx-client/api/types/KalturaESearchEntryBaseItem';
+import { KalturaMediaType } from 'kaltura-ngx-client/api/types/KalturaMediaType';
 
 
 @Injectable()
-export class EntriesStoreDataProvider implements EntriesDataProvider, OnDestroy {
+export class EntriesStoreEsearchDataProvider implements EntriesDataProvider, OnDestroy {
     constructor(private _kalturaServerClient: KalturaClient,
                 private _appPermissions: KMCPermissionsService,
                 private _metadataProfileService: MetadataProfileStore) {
@@ -98,7 +99,7 @@ export class EntriesStoreDataProvider implements EntriesDataProvider, OnDestroy 
                     }
 
                     // filter 'createdAt'
-                    if (data.createdAt) {
+                    if (data.createdAt && (data.createdAt.fromDate || data.createdAt.toDate)) {
                         const createdAtSearchItem = new KalturaESearchEntryItem({
                             fieldName: KalturaESearchEntryFieldName.createdAt,
                             range: new KalturaESearchRange({})
@@ -325,12 +326,13 @@ export class EntriesStoreDataProvider implements EntriesDataProvider, OnDestroy 
                     // handle default value for media types
                     if (!mediaTypeSearchItem) {
                         let mediaTypeIn = '1,2,5,6';
+                        const mediaTypeInArray = [KalturaMediaType.video, KalturaMediaType.audio]
                         if (this._appPermissions.hasPermission(KMCPermissions.FEATURE_LIVE_STREAM)) {
                             mediaTypeIn += ',201';
                         }
                         mediaTypeSearchItem = new KalturaESearchEntryItem({
                             fieldName: KalturaESearchEntryFieldName.mediaType,
-                            itemType: KalturaESearchItemType.partial,
+                            itemType: KalturaESearchItemType.exactMatch, // TODO [esearch] only exact match allowed
                             searchTerm: mediaTypeIn
                         });
                     }
