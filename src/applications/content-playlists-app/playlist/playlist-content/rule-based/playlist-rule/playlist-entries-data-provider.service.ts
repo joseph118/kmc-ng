@@ -1,5 +1,5 @@
 import { Injectable, OnDestroy } from '@angular/core';
-import { KalturaBaseEntry } from 'kaltura-ngx-client';
+import { KalturaBaseEntry, KalturaQuizAdvancedFilter } from 'kaltura-ngx-client';
 import { Observable } from 'rxjs';
 import { KalturaDetachedResponseProfile } from 'kaltura-ngx-client';
 import { KalturaMetadataSearchItem } from 'kaltura-ngx-client';
@@ -92,6 +92,13 @@ export class PlaylistEntriesDataProvider implements EntriesDataProvider, OnDestr
           this._updateFilterWithJoinedList(data.durations, filter, 'durationTypeMatchOr');
           this._updateFilterWithJoinedList(data.replacementStatuses, filter, 'replacementStatusIn');
           this._updateFilterWithJoinedList(data.flavors, filter, 'flavorParamsIdsMatchOr');
+
+            if (data.videoQuiz) {
+                advancedSearch.items.push(new KalturaSearchOperator({
+                    type: KalturaSearchOperatorType.searchOr,
+                    items: [new KalturaQuizAdvancedFilter({ isQuiz: data.videoQuiz })]
+                }));
+            }
 
           // filter 'distribution'
           if (data.distributions && data.distributions.length > 0) {

@@ -31,8 +31,12 @@ import { KalturaAccessControlListResponse } from 'kaltura-ngx-client';
 import { KalturaDistributionProfileListResponse } from 'kaltura-ngx-client';
 import { KalturaLogger } from '@kaltura-ng/kaltura-logger';
 
-export interface RefineGroupListItem
-{ value: string, label: string }
+export interface RefineGroupListItem {
+    value: string;
+    label: string;
+    name?: string;
+    items?: RefineGroupListItem[];
+}
 
 export class RefineGroupList {
     public items: RefineGroupListItem[] = [];
@@ -162,7 +166,7 @@ export class EntriesRefineFiltersService {
             result.lists.push(newRefineFilter);
             defaultFilterList.items.forEach((item: any) => {
               if (item.value !== '201' || this._permissionsService.hasPermission(KMCPermissions.FEATURE_LIVE_STREAM)) {
-                newRefineFilter.items.push({ value: item.value, label: item.label });
+                newRefineFilter.items.push({ value: item.value, label: item.label, items: item.items || [] });
               }
             });
 

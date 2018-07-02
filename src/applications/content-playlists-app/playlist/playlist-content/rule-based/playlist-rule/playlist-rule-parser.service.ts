@@ -141,6 +141,8 @@ export class PlaylistRuleParserService implements OnDestroy {
           }
         };
 
+        console.warn(customMetadata);
+
         if (customMetadata) {
           result.customMetadata = customMetadata;
         }

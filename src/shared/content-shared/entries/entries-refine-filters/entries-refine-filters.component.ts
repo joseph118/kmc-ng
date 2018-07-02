@@ -25,13 +25,13 @@ const listOfFilterNames: (keyof EntriesFilters)[] = [
     'customMetadata'
 ];
 
-export interface PrimeListItem
-{
-    label: string,
-    value: string,
-    parent: PrimeListItem,
-    listName: string,
-    children: PrimeListItem[]
+export interface PrimeListItem {
+    label: string;
+    value: string;
+    parent: PrimeListItem;
+    listName: string;
+    children: PrimeListItem[];
+    name?: string;
 }
 
 export interface PrimeList {
@@ -147,7 +147,7 @@ export class EntriesRefineFiltersComponent implements OnInit,  OnDestroy, OnChan
 
               diff.added.forEach(addedItem => {
                   const listItems = listData.items.length > 0 ? listData.items[0].children : [];
-                  const matchingItem = listItems.find(item => item.value === addedItem);
+                  const matchingItem = (listItems || []).find(item => item.value === addedItem);
                   if (!matchingItem) {
                       console.warn(`[entries-refine-filters]: failed to sync filter for '${listName}'`);
                   } else {
@@ -255,13 +255,23 @@ export class EntriesRefineFiltersComponent implements OnInit,  OnDestroy, OnChan
                         };
 
                         list.items.forEach(item => {
+                            const children = [];
+
+                            (item.items || []).forEach(child => {
+                                if (!this.enforcedFilters || !this.enforcedFilters[child.name]) {
+                                    const childItem = { label: child.label, value: child.value, parent: item, listName: child.name };
+                                    this._primeListsMap[child.name] = { items: children, selections: [] };
+                                    children.push(childItem);
+                                }
+                            });
+
                             listRootNode.children.push({
                                 label: item.label,
                                 value: item.value,
-                                children: [],
-                                listName: <any>list.name,
+                                children: children,
+                                listName: list.name,
                                 parent: listRootNode
-                            })
+                            });
                         });
 
                         primeList.items.push(listRootNode);
@@ -356,6 +366,7 @@ export class EntriesRefineFiltersComponent implements OnInit,  OnDestroy, OnChan
       // find group data by filter name
       if (node.listName) {
           const listData = this._primeListsMap[node.listName];
+
           if (listData) {
 
               // DEVELOPER NOTICE: there is a complexity caused since 'customMetadata' holds dynamic lists

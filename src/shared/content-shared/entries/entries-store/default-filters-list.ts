@@ -1,16 +1,33 @@
-import { KalturaEntryStatus } from 'kaltura-ngx-client';
+import { KalturaEntryStatus, KalturaNullableBoolean } from 'kaltura-ngx-client';
+
+export interface DefaultFilterListItem {
+    value: any;
+    label: string;
+    items?: DefaultFilterListItem[];
+    name?: string;
+}
 
 export interface DefaultFilterList {
     label: string;
     name: string;
-    items: { value: string, label: string }[]
+    items: DefaultFilterListItem[];
 }
 
 export const DefaultFiltersList: DefaultFilterList[] = [
   {
     name: 'mediaTypes', label: 'Media Types',
     items: [
-      { value: '1', label: 'Video' },
+      {
+          value: '1',
+          label: 'Video',
+          items: [
+              {
+                  value: KalturaNullableBoolean.trueValue,
+                  label: 'Quiz',
+                  name: 'videoQuiz'
+              }
+          ]
+      },
       { value: '2', label: 'Image' },
       { value: '5', label: 'Audio' },
       { value: '6', label: 'Video Mix' },

@@ -19,7 +19,7 @@ export interface TagItem {
     dataFetchSubscription?: ISubscription
 }
 
-const refineListsType: Array<keyof EntriesFilters> = ['mediaTypes', 'timeScheduling', 'ingestionStatuses', 'durations', 'originalClippedEntries', 'moderationStatuses', 'replacementStatuses', 'accessControlProfiles', 'flavors', 'distributions' ];
+const refineListsType: Array<keyof EntriesFilters> = ['mediaTypes', 'timeScheduling', 'ingestionStatuses', 'durations', 'originalClippedEntries', 'moderationStatuses', 'replacementStatuses', 'accessControlProfiles', 'flavors', 'distributions', 'videoQuiz' ];
 
 @Component({
     selector: 'k-entries-list-tags',
@@ -38,6 +38,15 @@ export class EntriesListTagsComponent implements OnInit, OnDestroy {
         (groups || []).forEach(group => {
             (group.lists || []).forEach(list => {
                 this._refineFiltersMap.set(list.name, list);
+
+                (list.items || []).forEach(child => {
+                    if (child.items && child.items.length) {
+                        const relevantItems = child.items.filter(item => item.name && refineListsType.indexOf(item.name) !== -1);
+                        (relevantItems || []).forEach(item => {
+                            this._refineFiltersMap.set(item.name, item);
+                        });
+                    }
+                });
             });
         });
 
@@ -317,9 +326,12 @@ export class EntriesListTagsComponent implements OnInit, OnDestroy {
         if (this._refineFiltersMap.size > 0) {
             const list = this._refineFiltersMap.get(listName);
             if (list) {
-                const item = list.items.find(listItem => String(listItem.value) === String(value));
-
-                result = item ? item.label : result;
+                if (list.items) {
+                    const item = list.items.find(listItem => String(listItem.value) === String(value));
+                    result = item ? item.label : result;
+                } else {
+                    result = list.label;
+                }
             }
 
         }
