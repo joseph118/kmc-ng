@@ -370,7 +370,7 @@ export class EntriesRefineFiltersComponent implements OnInit,  OnDestroy, OnChan
           if (listData) {
 
               // DEVELOPER NOTICE: there is a complexity caused since 'customMetadata' holds dynamic lists
-              let newFilterItems: string[];
+              let newFilterItems: string[] = [];
               let newFilterValue;
               let newFilterName: string;
 
@@ -392,8 +392,12 @@ export class EntriesRefineFiltersComponent implements OnInit,  OnDestroy, OnChan
                       return selectedNode.value !== null && typeof selectedNode.value !== 'undefined';
                   })
                   .forEach(selectedNode => {
-                      if (!newFilterItems.find(item => item === selectedNode.value)) {
-                          newFilterItems.push(selectedNode.value);
+                      if (Array.isArray(newFilterItems)) {
+                          if (!newFilterItems.find(item => item === selectedNode.value)) {
+                              newFilterItems.push(selectedNode.value);
+                          }
+                      } else {
+                          newFilterValue = selectedNode.value;
                       }
                   });
               this._entriesStore.filter({[newFilterName]: newFilterValue});
@@ -431,18 +435,22 @@ export class EntriesRefineFiltersComponent implements OnInit,  OnDestroy, OnChan
                       return selectedNode.value !== null && typeof selectedNode.value !== 'undefined';
                   })
                   .forEach(selectedNode => {
-                      const itemIndex = newFilterItems.findIndex(item => item === selectedNode.value);
-                      if (itemIndex > -1) {
-                          newFilterItems.splice(itemIndex, 1);
+                      if (Array.isArray(newFilterItems)) {
+                          const itemIndex = newFilterItems.findIndex(item => item === selectedNode.value);
+                          if (itemIndex > -1) {
+                              newFilterItems.splice(itemIndex, 1);
 
-                          if (node.listName === 'timeScheduling' && selectedNode.value === 'scheduled') {
-                              this._entriesStore.filter({
-                                  scheduledAt: {
-                                      fromDate: null,
-                                      toDate: null
-                                  }
-                              });
+                              if (node.listName === 'timeScheduling' && selectedNode.value === 'scheduled') {
+                                  this._entriesStore.filter({
+                                      scheduledAt: {
+                                          fromDate: null,
+                                          toDate: null
+                                      }
+                                  });
+                              }
                           }
+                      } else {
+                          newFilterValue = selectedNode.value;
                       }
                   });
 

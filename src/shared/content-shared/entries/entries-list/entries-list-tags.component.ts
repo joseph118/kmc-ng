@@ -41,9 +41,9 @@ export class EntriesListTagsComponent implements OnInit, OnDestroy {
 
                 (list.items || []).forEach(child => {
                     if (child.items && child.items.length) {
-                        const relevantItems = child.items.filter(item => item.name && refineListsType.indexOf(item.name) !== -1);
+                        const relevantItems = child.items.filter(item => item.name && (<string[]>refineListsType).indexOf(item.name) !== -1);
                         (relevantItems || []).forEach(item => {
-                            this._refineFiltersMap.set(item.name, item);
+                            this._refineFiltersMap.set(item.name, <RefineGroupList>item);
                         });
                     }
                 });

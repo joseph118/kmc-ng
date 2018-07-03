@@ -20,8 +20,9 @@ import { KMCPermissions, KMCPermissionsService } from 'app-shared/kmc-shared/kmc
 import { KalturaLogger } from '@kaltura-ng/kaltura-logger';
 
 export interface RefineGroupListItem {
-  value: string,
-  label: string
+  value: string;
+  label: string;
+  items?: RefineGroupListItem[];
 }
 
 export class RefineGroupList {

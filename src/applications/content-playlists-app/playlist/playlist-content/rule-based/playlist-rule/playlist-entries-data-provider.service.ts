@@ -293,6 +293,7 @@ export class PlaylistEntriesDataProvider implements EntriesDataProvider, OnDestr
       categoriesMode,
       customMetadata: {},
       limits: subApplicationsConfig.contentPlaylistsApp.ruleBasedTotalResults,
+        videoQuiz: KalturaNullableBoolean.nullValue
     };
   }
 }
