@@ -1736,6 +1736,7 @@
                     "setDefault": "Set as default",
                     "edit": "Edit",
                     "editCaption": "Edit Caption",
+                    "editCaptions": "Edit Captions",
                     "download": "Download",
                     "delete": "Delete",
                     "processing": "Processing",

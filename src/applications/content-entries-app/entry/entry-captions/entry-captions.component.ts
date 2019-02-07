@@ -9,7 +9,7 @@ import { BrowserService } from 'app-shared/kmc-shell';
 import { KalturaCaptionAssetStatus } from 'kaltura-ngx-client';
 import { PopupWidgetComponent, PopupWidgetStates } from '@kaltura-ng/kaltura-ui';
 
-import { EntryCaptionsWidget } from './entry-captions-widget.service';
+import {CaptionRow, EntryCaptionsWidget} from './entry-captions-widget.service';
 
 import { getKalturaServerUri, serverConfig } from 'config/server';
 import { KMCPermissions } from 'app-shared/kmc-shared/kmc-permissions';
@@ -28,6 +28,7 @@ export class EntryCaptions implements AfterViewInit, OnInit, OnDestroy {
 	public _actions: MenuItem[] = [];
     public _captionStatusReady = KalturaCaptionAssetStatus.ready;
     public _requestCaptionsAvailable = false;
+    public _allowReachEdit = false;
 
 	@ViewChild('actionsmenu') private actionsMenu: Menu;
 	@ViewChild('editPopup') public editPopup: PopupWidgetComponent;
@@ -55,6 +56,12 @@ export class EntryCaptions implements AfterViewInit, OnInit, OnDestroy {
             .pipe(cancelOnDestroy(this))
             .subscribe(entry => {
                 this._requestCaptionsAvailable = this._reachAppViewService.isAvailable({ page: ReachPages.entry, entry });
+            });
+
+        this._widgetService._captions$
+            .pipe(cancelOnDestroy(this))
+            .subscribe(captions => {
+                this._allowReachEdit = this.captionsReady(captions.items);
             });
 	}
 
@@ -113,6 +120,20 @@ export class EntryCaptions implements AfterViewInit, OnInit, OnDestroy {
 		}
 	}
 
+	private captionsReady(captions: CaptionRow[]): boolean {
+	    if (captions.length > 0){
+	        let captionReady = false;
+	        captions.forEach((caption: CaptionRow) => {
+	            if (caption.status && caption.status === KalturaCaptionAssetStatus.ready) {
+                    captionReady = true;
+                }
+            });
+	        return captionReady;
+        } else {
+            return false;
+        }
+    }
+
 	private _downloadFile(): void {
 		if (this._browserService.isIE11()) { // IE11 - use download API
 			const baseUrl = serverConfig.cdnServers.serverUri;
@@ -144,6 +165,11 @@ export class EntryCaptions implements AfterViewInit, OnInit, OnDestroy {
     }
 
     public _requestCaptions(): void {
+        const entry = this._widgetService.data;
+        this._reachAppViewService.open({ entry, page: ReachPages.entry });
+    }
+
+    public _editCaptions(): void {
         const entry = this._widgetService.data;
         this._reachAppViewService.open({ entry, page: ReachPages.entry });
     }
